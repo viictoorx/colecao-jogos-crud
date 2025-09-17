@@ -2,123 +2,217 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>Frontend - CRUD Coleção de Jogos</title>
+  <title>Dashboard - Coleção de Jogos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* O seu CSS original entra aqui - sem alterações */
-    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#10b981; --danger:#ef4444; }
-    *{ box-sizing:border-box; }
-    body{ margin:0; font-family:system-ui, sans-serif; background:linear-gradient(180deg, #0b1220, #0f172a); color:var(--text); min-height:100vh; padding:24px; }
-    .container{ max-width:1000px; margin:0 auto; display:grid; gap:16px; }
-    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    h1{ margin:0; font-size:clamp(20px, 2.8vw, 28px); }
-    .card{ background:rgba(17,24,39,.75); backdrop-filter: blur(6px); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:16px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
-    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
-    input{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.1); background:#0b1220; color:var(--text); outline:none; }
-    input:focus{ border-color: rgba(16,185,129,.7); box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
-    .row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .row-3{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; } /* MUDANÇA: 4 colunas para o formulário */
-    button{ border:0; border-radius:10px; padding:10px 14px; color:#081018; background:var(--accent); font-weight:600; cursor:pointer; }
-    button.secondary{ background:#2563eb; color:white; }
-    button.warn{ background:var(--danger); color:white; }
-    button.ghost{ background:transparent; color:var(--text); border:1px solid rgba(255,255,255,.15); }
-    .stack{ display:flex; gap:8px; flex-wrap:wrap; }
-    .msg{ font-size:14px; color:var(--muted); }
-    .ok{ color:#34d399; }
-    .err{ color:#fca5a5; }
-    .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
-    @media (max-width: 860px) { .grid, .row, .row-3{ grid-template-columns:1fr; } }
+    /* 1. VARIÁVEIS DE ESTILO E CONFIGURAÇÕES GLOBAIS */
+    :root {
+      --bg-dark: #111827;
+      --bg-light: #1f2937;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-light: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-glow: rgba(59, 130, 246, 0.5);
+      --accent-gradient: linear-gradient(45deg, #3b82f6, #8b5cf6);
+      --danger: #ef4444;
+      --font-family: 'Poppins', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+      background-size: 24px 24px;
+      color: var(--text-light);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    
+    /* 2. ANIMAÇÕES */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 3. COMPONENTES PRINCIPAIS */
+    .container { max-width: 1000px; margin: 0 auto; display: grid; gap: 24px; }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    h1, h3 { margin: 0; font-weight: 600; }
+    h1 { font-size: clamp(24px, 2.8vw, 32px); }
+    h3 { margin-bottom: 16px; border-left: 3px solid #3b82f6; padding-left: 12px;}
+
+    .card {
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease-out;
+      opacity: 0; /* Começa invisível para a animação */
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 20px var(--accent-glow);
+    }
+    /* Delay para cada card aparecer em sequência */
+    .grid > .stack > .card:nth-child(1) { animation-delay: 0.1s; }
+    .grid > .stack > .card:nth-child(2) { animation-delay: 0.2s; }
+    .grid > .stack > .card:nth-child(3) { animation-delay: 0.3s; }
+    .grid > .stack > .card:nth-child(4) { animation-delay: 0.4s; }
+    .grid > .stack > .card:nth-child(5) { animation-delay: 0.5s; }
+    .grid > .card { animation-delay: 0.6s; }
+    
+    /* 4. ELEMENTOS DE FORMULÁRIO */
+    label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+    
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-dark);
+      color: var(--text-light);
+      outline: none;
+      transition: all 0.2s ease-out;
+    }
+    input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px; /* Espaço entre ícone e texto */
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 16px;
+      color: white;
+      background: var(--accent-gradient);
+      font-weight: 600;
+      font-family: var(--font-family);
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    button svg { width: 16px; height: 16px; }
+    button.warn { background: var(--danger); }
+    button.ghost { background: transparent; border: 1px solid var(--border-color); }
+    button.ghost:hover { background: var(--bg-light); border-color: #3b82f6; }
+    
+    /* 5. CLASSES UTILITÁRIAS */
+    .stack { display: flex; gap: 12px; flex-wrap: wrap; }
+    .msg { font-size: 14px; color: var(--text-muted); align-self: center; }
+    .ok { color: #34d399; }
+    .err { color: #fca5a5; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .row-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; }
+    @media (max-width: 860px) { .grid, .row, .row-4 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>CRUD Coleção de Jogos (Frontend)</h1>
+      <h1>Dashboard de Jogos Retrô</h1>
       <div class="stack">
-        <label style="margin:0">
-          <span style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Base URL da API</span>
+        <label style="margin:0; min-width: 200px;">
+          <span style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:6px;">URL da API</span>
           <input id="baseUrl" value="http://127.0.0.1:3344" />
         </label>
-        <button class="ghost" onclick="ping()">Testar conexão</button>
       </div>
     </header>
 
     <div class="grid">
-      <div class="stack" style="flex-direction:column; gap:16px">
+      <div class="stack" style="flex-direction:column; gap:24px">
         <div class="card">
-          <h3 style="margin-top:0">Listar Jogos</h3>
+          <h3>Consultar Coleção</h3>
           <div class="stack">
-            <button onclick="listItems()">GET /jogos</button>
+            <button onclick="listItems()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>
+              GET /jogos
+            </button>
             <span id="listMsg" class="msg"></span>
           </div>
         </div>
 
         <div class="card">
-          <h3 style="margin-top:0">Buscar Jogo por ID</h3>
-          <div class="row">
-            <label>
-              ID
-              <input id="getId" type="number" placeholder="Ex.: 1"/>
-            </label>
-            <div class="stack" style="align-items:flex-end">
-              <button class="secondary" onclick="getItem()">GET /jogos/{id}</button>
-            </div>
-          </div>
-          <div id="getMsg" class="msg"></div>
-        </div>
-
-        <div class="card">
-          <h3 style="margin-top:0">Adicionar Jogo</h3>
-          <div class="row-3"> <label> Título <input id="createTitulo" type="text" placeholder="Chrono Trigger"/> </label>
+          <h3>Adicionar Novo Jogo</h3>
+          <div class="row-4">
+            <label> Título <input id="createTitulo" type="text" placeholder="Chrono Trigger"/> </label>
             <label> Console <input id="createConsole" type="text" placeholder="SNES"/> </label>
             <label> Ano <input id="createAno" type="number" placeholder="1995"/> </label>
             <label> Gênero <input id="createGenero" type="text" placeholder="RPG"/> </label>
           </div>
-          <div class="stack" style="margin-top:8px">
-            <button onclick="createItem()">POST /jogos</button>
+          <div class="stack" style="margin-top:16px">
+            <button onclick="createItem()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+              POST /jogos
+            </button>
             <span id="createMsg" class="msg"></span>
           </div>
         </div>
-
+        
         <div class="card">
-          <h3 style="margin-top:0">Atualizar Jogo</h3>
-          <div class="row-3">
-            <label> ID (alvo) <input id="updateId" type="number" placeholder="Ex.: 2"/> </label>
+          <h3>Gerenciar Jogo Específico</h3>
+          <label>ID do Jogo Alvo <input id="targetId" type="number" placeholder="Ex: 1"/></label>
+          <div style="border-top: 1px solid var(--border-color); margin: 16px 0;"></div>
+          <div class="row-4">
             <label> Título (novo) <input id="updateTitulo" type="text"/> </label>
             <label> Console (novo) <input id="updateConsole" type="text"/> </label>
             <label> Gênero (novo) <input id="updateGenero" type="text"/> </label>
           </div>
-          <div class="stack" style="margin-top:8px">
-            <button class="secondary" onclick="updateItem()">PUT /jogos/{id}</button>
-            <span id="updateMsg" class="msg"></span>
+          <div class="stack" style="margin-top:16px">
+            <button onclick="updateItem()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+              PUT /jogos/{id}
+            </button>
+            <button class="warn" onclick="deleteItem()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.067-2.09.92-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+              DELETE /jogos/{id}
+            </button>
+            <span id="manageMsg" class="msg"></span>
           </div>
         </div>
 
-        <div class="card">
-          <h3 style="margin-top:0">Remover Jogo</h3>
-            <label> ID do Jogo <input id="deleteId" type="number" placeholder="Ex.: 1"/> </label>
-          <div class="stack" style="margin-top:8px">
-            <button class="warn" onclick="deleteItem()">DELETE /jogos/{id}</button>
-            <span id="deleteMsg" class="msg"></span>
-          </div>
-        </div>
       </div>
 
       <div class="card">
-        <h3 style="margin-top:0">Resultado</h3>
-        <div class="stack" style="margin-bottom:8px">
-          <button class="ghost" onclick="clearOutput(true)">Limpar</button>
+        <h3>Resultado da Requisição</h3>
+        <div class="stack" style="margin-bottom:16px">
+          <button class="ghost" onclick="clearOutput(true)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Limpar
+          </button>
         </div>
-        <div id="output" class="msg">Use os botões para fazer requisições…</div>
+        <div id="output" class="msg">Aguardando uma ação...</div>
       </div>
     </div>
   </div>
 
   <script>
-    // --- LÓGICA JAVASCRIPT MODIFICADA ---
+    // --- LÓGICA JAVASCRIPT OTIMIZADA ---
     const $ = (id) => document.getElementById(id);
-    const jsonPretty = (obj) => `<pre style="white-space:pre-wrap; margin:0">${JSON.stringify(obj, null, 2)}</pre>`;
-    const MSG_IDS = ["listMsg","getMsg","createMsg","updateMsg","deleteMsg"];
+    const jsonPretty = (obj) => `<pre style="white-space:pre-wrap; margin:0; font-size:12px;">${JSON.stringify(obj, null, 2)}</pre>`;
+    const MSG_IDS = ["listMsg", "createMsg", "manageMsg"];
 
     function base() {
       let u = $("baseUrl").value.trim();
@@ -134,17 +228,20 @@
     }
 
     async function api(path, opts = {}) {
-      const url = `${base()}${path}`;
-      const res = await fetch(url, {
-        headers: { "Content-Type": "application/json" },
-        ...opts
-      });
-      const data = await res.json().catch(() => null);
-      return { ok: res.ok, status: res.status, data };
+      try {
+        const url = `${base()}${path}`;
+        const res = await fetch(url, {
+          headers: { "Content-Type": "application/json" }, ...opts
+        });
+        const data = await res.json().catch(() => ({ msg: "Resposta sem corpo JSON." }));
+        return { ok: res.ok, status: res.status, data };
+      } catch (e) {
+        return { ok: false, status: 0, data: { error: "Falha na conexão com a API.", details: e.message } };
+      }
     }
     
     function showOut(title, payload) {
-      $("output").innerHTML = `<div class="${payload.ok ? 'ok' : 'err'}" style="margin-bottom:8px">${title}</div>${jsonPretty(payload.data ?? {})}`;
+      $("output").innerHTML = `<div class="${payload.ok ? 'ok' : 'err'}" style="margin-bottom:8px">${title} (Status: ${payload.status})</div>${jsonPretty(payload.data ?? {})}`;
     }
 
     function setMsg(id, msg, ok=true) {
@@ -154,35 +251,14 @@
     }
 
     function clearOutput(manual=false){
-      $("output").innerHTML = manual ? "Saída limpa." : "";
-    }
-
-    async function ping() {
-      resetUI("listMsg");
-      try {
-        const r = await api("/jogos");
-        setMsg("listMsg", r.ok ? "Conectado! ✅" : `Falhou (${r.status})`, r.ok);
-        showOut("Ping (GET /jogos)", r);
-      } catch (e) {
-        setMsg("listMsg", "Erro de conexão", false);
-        showOut("Erro", { ok: false, data: { message: String(e) } });
-      }
+      $("output").innerHTML = manual ? "Saída limpa." : "Aguardando uma ação...";
     }
 
     async function listItems() {
       resetUI("listMsg");
       const r = await api("/jogos");
-      setMsg("listMsg", r.ok ? "OK" : `Erro ${r.status}`, r.ok);
+      setMsg("listMsg", r.ok ? "Sucesso!" : `Erro`, r.ok);
       showOut("GET /jogos", r);
-    }
-
-    async function getItem() {
-      resetUI("getMsg");
-      const id = $("getId").value;
-      if (!id) return setMsg("getMsg", "Informe um ID.", false);
-      const r = await api(`/jogos/${id}`);
-      setMsg("getMsg", r.ok ? "OK" : `Erro ${r.status}`, r.ok);
-      showOut(`GET /jogos/${id}`, r);
     }
 
     async function createItem() {
@@ -193,46 +269,44 @@
           ano_lancamento: Number($("createAno").value),
           genero: $("createGenero").value,
       };
-      if (!data.titulo || !data.console) return setMsg("createMsg", "Preencha Título e Console.", false);
+      if (!data.titulo || !data.console) return setMsg("createMsg", "Título e Console são obrigatórios.", false);
 
-      const r = await api("/jogos", {
-        method: "POST",
-        body: JSON.stringify(data)
-      });
-      setMsg("createMsg", r.ok ? "Criado!" : `Erro ${r.status}`, r.ok);
+      const r = await api("/jogos", { method: "POST", body: JSON.stringify(data) });
+      setMsg("createMsg", r.ok ? "Jogo adicionado!" : `Erro`, r.ok);
       showOut("POST /jogos", r);
+      if(r.ok) listItems(); // Atualiza a lista automaticamente
     }
 
     async function updateItem() {
-      resetUI("updateMsg");
-      const id = $("updateId").value;
-      if (!id) return setMsg("updateMsg", "Informe o ID do jogo a ser atualizado.", false);
+      resetUI("manageMsg");
+      const id = $("targetId").value;
+      if (!id) return setMsg("manageMsg", "Informe o ID do jogo alvo.", false);
       
       const data = {
           titulo: $("updateTitulo").value,
           console: $("updateConsole").value,
           genero: $("updateGenero").value,
       };
-      // Remove campos vazios para não sobrescrever com nada
       Object.keys(data).forEach(key => data[key] === "" && delete data[key]);
 
-      if (Object.keys(data).length === 0) return setMsg("updateMsg", "Preencha pelo menos um campo para atualizar.", false);
+      if (Object.keys(data).length === 0) return setMsg("manageMsg", "Preencha ao menos um campo para atualizar.", false);
 
-      const r = await api(`/jogos/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data)
-      });
-      setMsg("updateMsg", r.ok ? "Atualizado!" : `Erro ${r.status}`, r.ok);
+      const r = await api(`/jogos/${id}`, { method: "PUT", body: JSON.stringify(data) });
+      setMsg("manageMsg", r.ok ? "Jogo atualizado!" : `Erro`, r.ok);
       showOut(`PUT /jogos/${id}`, r);
+      if(r.ok) listItems(); // Atualiza a lista automaticamente
     }
 
     async function deleteItem() {
-      resetUI("deleteMsg");
-      const id = $("deleteId").value;
-      if (!id) return setMsg("deleteMsg", "Informe um ID.", false);
+      resetUI("manageMsg");
+      const id = $("targetId").value;
+      if (!id) return setMsg("manageMsg", "Informe o ID do jogo alvo.", false);
+      if (!confirm(`Tem certeza que deseja apagar o jogo com ID ${id}?`)) return;
+
       const r = await api(`/jogos/${id}`, { method: "DELETE" });
-      setMsg("deleteMsg", r.ok ? "Removido!" : `Erro ${r.status}`, r.ok);
+      setMsg("manageMsg", r.ok ? "Jogo apagado!" : `Erro`, r.ok);
       showOut(`DELETE /jogos/${id}`, r);
+      if(r.ok) listItems(); // Atualiza a lista automaticamente
     }
   </script>
 </body>
