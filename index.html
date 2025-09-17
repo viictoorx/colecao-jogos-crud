@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Frontend - CRUD Coleção de Jogos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* O seu CSS original entra aqui - sem alterações */
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#10b981; --danger:#ef4444; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui, sans-serif; background:linear-gradient(180deg, #0b1220, #0f172a); color:var(--text); min-height:100vh; padding:24px; }
+    .container{ max-width:1000px; margin:0 auto; display:grid; gap:16px; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    h1{ margin:0; font-size:clamp(20px, 2.8vw, 28px); }
+    .card{ background:rgba(17,24,39,.75); backdrop-filter: blur(6px); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:16px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.1); background:#0b1220; color:var(--text); outline:none; }
+    input:focus{ border-color: rgba(16,185,129,.7); box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
+    .row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .row-3{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; } /* MUDANÇA: 4 colunas para o formulário */
+    button{ border:0; border-radius:10px; padding:10px 14px; color:#081018; background:var(--accent); font-weight:600; cursor:pointer; }
+    button.secondary{ background:#2563eb; color:white; }
+    button.warn{ background:var(--danger); color:white; }
+    button.ghost{ background:transparent; color:var(--text); border:1px solid rgba(255,255,255,.15); }
+    .stack{ display:flex; gap:8px; flex-wrap:wrap; }
+    .msg{ font-size:14px; color:var(--muted); }
+    .ok{ color:#34d399; }
+    .err{ color:#fca5a5; }
+    .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
+    @media (max-width: 860px) { .grid, .row, .row-3{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>CRUD Coleção de Jogos (Frontend)</h1>
+      <div class="stack">
+        <label style="margin:0">
+          <span style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Base URL da API</span>
+          <input id="baseUrl" value="http://127.0.0.1:3344" />
+        </label>
+        <button class="ghost" onclick="ping()">Testar conexão</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="stack" style="flex-direction:column; gap:16px">
+        <div class="card">
+          <h3 style="margin-top:0">Listar Jogos</h3>
+          <div class="stack">
+            <button onclick="listItems()">GET /jogos</button>
+            <span id="listMsg" class="msg"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Buscar Jogo por ID</h3>
+          <div class="row">
+            <label>
+              ID
+              <input id="getId" type="number" placeholder="Ex.: 1"/>
+            </label>
+            <div class="stack" style="align-items:flex-end">
+              <button class="secondary" onclick="getItem()">GET /jogos/{id}</button>
+            </div>
+          </div>
+          <div id="getMsg" class="msg"></div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Adicionar Jogo</h3>
+          <div class="row-3"> <label> Título <input id="createTitulo" type="text" placeholder="Chrono Trigger"/> </label>
+            <label> Console <input id="createConsole" type="text" placeholder="SNES"/> </label>
+            <label> Ano <input id="createAno" type="number" placeholder="1995"/> </label>
+            <label> Gênero <input id="createGenero" type="text" placeholder="RPG"/> </label>
+          </div>
+          <div class="stack" style="margin-top:8px">
+            <button onclick="createItem()">POST /jogos</button>
+            <span id="createMsg" class="msg"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Atualizar Jogo</h3>
+          <div class="row-3">
+            <label> ID (alvo) <input id="updateId" type="number" placeholder="Ex.: 2"/> </label>
+            <label> Título (novo) <input id="updateTitulo" type="text"/> </label>
+            <label> Console (novo) <input id="updateConsole" type="text"/> </label>
+            <label> Gênero (novo) <input id="updateGenero" type="text"/> </label>
+          </div>
+          <div class="stack" style="margin-top:8px">
+            <button class="secondary" onclick="updateItem()">PUT /jogos/{id}</button>
+            <span id="updateMsg" class="msg"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Remover Jogo</h3>
+            <label> ID do Jogo <input id="deleteId" type="number" placeholder="Ex.: 1"/> </label>
+          <div class="stack" style="margin-top:8px">
+            <button class="warn" onclick="deleteItem()">DELETE /jogos/{id}</button>
+            <span id="deleteMsg" class="msg"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Resultado</h3>
+        <div class="stack" style="margin-bottom:8px">
+          <button class="ghost" onclick="clearOutput(true)">Limpar</button>
+        </div>
+        <div id="output" class="msg">Use os botões para fazer requisições…</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- LÓGICA JAVASCRIPT MODIFICADA ---
+    const $ = (id) => document.getElementById(id);
+    const jsonPretty = (obj) => `<pre style="white-space:pre-wrap; margin:0">${JSON.stringify(obj, null, 2)}</pre>`;
+    const MSG_IDS = ["listMsg","getMsg","createMsg","updateMsg","deleteMsg"];
+
+    function base() {
+      let u = $("baseUrl").value.trim();
+      return u.endsWith("/") ? u.slice(0, -1) : u;
+    }
+
+    function resetUI(activeMsgId){
+      MSG_IDS.forEach(id => {
+          const el = $(id);
+          if(el) el.textContent = "";
+      });
+      $("output").innerHTML = "";
+    }
+
+    async function api(path, opts = {}) {
+      const url = `${base()}${path}`;
+      const res = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        ...opts
+      });
+      const data = await res.json().catch(() => null);
+      return { ok: res.ok, status: res.status, data };
+    }
+    
+    function showOut(title, payload) {
+      $("output").innerHTML = `<div class="${payload.ok ? 'ok' : 'err'}" style="margin-bottom:8px">${title}</div>${jsonPretty(payload.data ?? {})}`;
+    }
+
+    function setMsg(id, msg, ok=true) {
+      const el = $(id);
+      el.className = `msg ${ok ? "ok" : "err"}`;
+      el.textContent = msg || "";
+    }
+
+    function clearOutput(manual=false){
+      $("output").innerHTML = manual ? "Saída limpa." : "";
+    }
+
+    async function ping() {
+      resetUI("listMsg");
+      try {
+        const r = await api("/jogos");
+        setMsg("listMsg", r.ok ? "Conectado! ✅" : `Falhou (${r.status})`, r.ok);
+        showOut("Ping (GET /jogos)", r);
+      } catch (e) {
+        setMsg("listMsg", "Erro de conexão", false);
+        showOut("Erro", { ok: false, data: { message: String(e) } });
+      }
+    }
+
+    async function listItems() {
+      resetUI("listMsg");
+      const r = await api("/jogos");
+      setMsg("listMsg", r.ok ? "OK" : `Erro ${r.status}`, r.ok);
+      showOut("GET /jogos", r);
+    }
+
+    async function getItem() {
+      resetUI("getMsg");
+      const id = $("getId").value;
+      if (!id) return setMsg("getMsg", "Informe um ID.", false);
+      const r = await api(`/jogos/${id}`);
+      setMsg("getMsg", r.ok ? "OK" : `Erro ${r.status}`, r.ok);
+      showOut(`GET /jogos/${id}`, r);
+    }
+
+    async function createItem() {
+      resetUI("createMsg");
+      const data = {
+          titulo: $("createTitulo").value,
+          console: $("createConsole").value,
+          ano_lancamento: Number($("createAno").value),
+          genero: $("createGenero").value,
+      };
+      if (!data.titulo || !data.console) return setMsg("createMsg", "Preencha Título e Console.", false);
+
+      const r = await api("/jogos", {
+        method: "POST",
+        body: JSON.stringify(data)
+      });
+      setMsg("createMsg", r.ok ? "Criado!" : `Erro ${r.status}`, r.ok);
+      showOut("POST /jogos", r);
+    }
+
+    async function updateItem() {
+      resetUI("updateMsg");
+      const id = $("updateId").value;
+      if (!id) return setMsg("updateMsg", "Informe o ID do jogo a ser atualizado.", false);
+      
+      const data = {
+          titulo: $("updateTitulo").value,
+          console: $("updateConsole").value,
+          genero: $("updateGenero").value,
+      };
+      // Remove campos vazios para não sobrescrever com nada
+      Object.keys(data).forEach(key => data[key] === "" && delete data[key]);
+
+      if (Object.keys(data).length === 0) return setMsg("updateMsg", "Preencha pelo menos um campo para atualizar.", false);
+
+      const r = await api(`/jogos/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      });
+      setMsg("updateMsg", r.ok ? "Atualizado!" : `Erro ${r.status}`, r.ok);
+      showOut(`PUT /jogos/${id}`, r);
+    }
+
+    async function deleteItem() {
+      resetUI("deleteMsg");
+      const id = $("deleteId").value;
+      if (!id) return setMsg("deleteMsg", "Informe um ID.", false);
+      const r = await api(`/jogos/${id}`, { method: "DELETE" });
+      setMsg("deleteMsg", r.ok ? "Removido!" : `Erro ${r.status}`, r.ok);
+      showOut(`DELETE /jogos/${id}`, r);
+    }
+  </script>
+</body>
+</html>
